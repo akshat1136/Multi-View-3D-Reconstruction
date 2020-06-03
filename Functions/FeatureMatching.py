@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -284,3 +285,8 @@ class FeatureMatching:
         self.Matcher_(self.keypts)
         
         return self.keypts, self.Match, self.descriptors
+=======
+class FeatureMatching:
+    def __init__(self, Imgs):
+        return
+>>>>>>> ec5c6772c66bd15c13efd761bb6e3638457de73e
