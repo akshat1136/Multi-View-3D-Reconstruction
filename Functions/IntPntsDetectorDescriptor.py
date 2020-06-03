@@ -106,7 +106,7 @@ def generateDoGImages(gaussian_images):
 # Scale-space extrema related #
 ###############################
 
-def findScaleSpaceExtrema(gaussian_images, dog_images, num_intervals, sigma, image_border_width, contrast_threshold=0.15):
+def findScaleSpaceExtrema(gaussian_images, dog_images, num_intervals, sigma, image_border_width, contrast_threshold=0.10):
     """Find pixel positions of all scale-space extrema in the image pyramid
     """
     logger.debug('Finding scale-space extrema...')
@@ -231,7 +231,7 @@ def computeHessianAtCenterPixel(pixel_array):
 # Keypoint orientations #
 #########################
 
-def computeKeypointsWithOrientations(keypoint, octave_index, gaussian_image, radius_factor=3, num_bins=36, peak_ratio=0.8, scale_factor=1.5):
+def computeKeypointsWithOrientations(keypoint, octave_index, gaussian_image, radius_factor=3, num_bins=36, peak_ratio=0.8, scale_factor=1.8):
     """Compute orientations for each keypoint
     """
     logger.debug('Computing keypoint orientations...')

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -124,9 +123,6 @@ class FeatureMatching:
                 Match_corr.append(mini)
                 array[0, y, x] = array[1, y_, x_] = -1
         pbar.close()
-                
-        if (array > -1).sum() > 0:
-            print("Something is wrong")
         
         match_array = np.ones((2, H, W, 2))
         for match in Match:
@@ -144,6 +140,7 @@ class FeatureMatching:
         Match = []
         for a, bc in zip(L1[:,0], L1[:,1:]):
             x, y = self.keypts[c1][a]
+            print(L2.shape)
             for bc_, d in zip(L2[:,:-1], L2[:,-1]):
                 if (bc == bc_).all():
                     y_, x_ = self.keypts[c2][d]
@@ -174,7 +171,7 @@ class FeatureMatching:
             for comb in Comb(r):
                 comb = Sort(comb)
                 a, b = self.Matches[comb[:-1]][0], self.Matches[comb[1:]][0]
-                # match : (m, 2), match_array : (2, H, W, r)
+                # match : (m, 2)
                 match = self.MatchMultiple(a, b, comb)
                 self.Matches[comb] = [match]
         
@@ -284,9 +281,8 @@ class FeatureMatching:
         print('Keypoint & Feature Descriptor Extraction Complete')
         self.Matcher_(self.keypts)
         
-        return self.keypts, self.Match, self.descriptors
-=======
-class FeatureMatching:
-    def __init__(self, Imgs):
-        return
->>>>>>> ec5c6772c66bd15c13efd761bb6e3638457de73e
+        keypts = []
+        for pts in self.keypts:
+            keypts.append(np.hstack((pts, np.ones((pts.shape[0], 1)))))
+        self.keypts = keypts
+        return self.keypts, np.stack(self.Match).astype(int), self.descriptors

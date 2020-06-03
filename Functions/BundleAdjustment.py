@@ -140,27 +140,16 @@ class BundleAdjustment:
         Jacobian = np.zeros((2*xes.shape[0], current_matrix.shape[1]))
         
         for i, (x, y) in enumerate(zip(xes, yies)):
-<<<<<<< HEAD
             X_, Y_, Z_ = current_matrix[0][3*x : 3*x+3]
             x_, y_, z_, theta_, p_, q_, r_ = current_matrix[0][3*num_3D + 7*y : 3*num_3D + 7*y + 7]
-=======
-            X_, Y_, Z_ = current_matrix[0][3*y : 3*y+3]
-            x_, y_, z_, theta_, p_, q_, r_ = current_matrix[0][3*num_3D + 7*x : 3*num_3D + 7*x + 7]            
-            
->>>>>>> ec5c6772c66bd15c13efd761bb6e3638457de73e
             ## now calculating temporary jacobian matrix
             tempe = self.jacfun(X_,Y_,Z_,x_,y_,z_,theta_,p_,q_,r_)
             tempe = np.asarray(tempe)
             tempe = tempe.reshape((tempe.shape[0],tempe.shape[2])).T
             
             ## now putting values of temporary jacobian into final jacobian & calculating sparse_matrix
-<<<<<<< HEAD
             Jacobian[2*i : 2*i+2, 3*x : 3*x+3] = np.array([tempe[0,:3],tempe[1,:3]])
             Jacobian[2*i : 2*i+2, 3*num_3D + 7*y : 3*num_3D + 7*y+7] = np.array([tempe[0,3:10],tempe[1,3:10]])
-=======
-            Jacobian[2*i : 2*i+2, 3*y : 3*y+3] = np.array([tempe[0,:3],tempe[1,:3]])
-            Jacobian[2*i : 2*i+2, 3*num_3D + 7*x : 3*num_3D + 7*x+7] = np.array([tempe[0,3:10],tempe[1,3:10]])
->>>>>>> ec5c6772c66bd15c13efd761bb6e3638457de73e
             #done
         return Jacobian
     
@@ -175,13 +164,8 @@ class BundleAdjustment:
         imagep_hat_ordered = []
         
         for i, (x, y) in enumerate(zip(xes, yies)):
-<<<<<<< HEAD
             X_, Y_, Z_ = current_matrix[0][3*x : 3*x+3]
             x_, y_, z_, theta_, p_, q_, r_ = current_matrix[0][3*num_3D + 7*y : 3*num_3D + 7*y + 7]
-=======
-            X_, Y_, Z_ = current_matrix[0][3*y : 3*y+3]
-            x_, y_, z_, theta_, p_, q_, r_ = current_matrix[0][3*num_3D + 7*x : 3*num_3D + 7*x + 7]
->>>>>>> ec5c6772c66bd15c13efd761bb6e3638457de73e
             
             ## now calculating image_point_hat (i.e. estimate) 
             tempo = self.xhat(X_,Y_,Z_,x_,y_,z_,theta_,p_,q_,r_)

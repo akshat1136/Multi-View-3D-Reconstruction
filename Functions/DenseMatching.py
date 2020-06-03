@@ -36,22 +36,68 @@ class DenseMatching:
     
     def Seed_Selection(self, w, thld_zncc_seed):
         self.Seeds = []
-        pbar = tqdm(self.points1, total=self.points1.shape[0], leave=False, file=sys.stdout)
-        for p1 in pbar:
+        pbar = tqdm(total=self.points1.shape[0] + self.points2.shape[0], file=sys.stdout)
+        check_array = np.ones((2, self.H, self.W, 2)) * -1
+        
+        for i, p1 in enumerate(self.points1):
+            pbar.update(1)
             pbar.set_description(f'Working on image {self.i} and {self.j}, Seed Selection Progress')
-            for p2 in self.points2:
-                x, y = p1
-                x = self.Imgs[0][int(max(0, y-w)) : int(min(self.H-1, y+w+1)), int(max(0, x-w)) : int(min(self.W-1, x+w+1))]
+            x, y = p1
+            x = self.Imgs[0][int(max(0, y-w)) : int(min(self.H-1, y+w+1)), int(max(0, x-w)) : int(min(self.W-1, x+w+1))]
+            zncc_best = 1
+            for j, p2 in enumerate(self.points2):
                 x_, y_ = p2
                 x_ = self.Imgs[1][int(max(0, y_-w)) : int(min(self.H-1, y_+w+1)), int(max(0, x_-w)) : int(min(self.W-1, x_+w+1))]
-                
                 zncc = self.ZNCC(x, x_)
-                if zncc > thld_zncc_seed:
+                
+                if zncc > thld_zncc_seed and zncc < zncc_best:
+                    zncc_best = zncc
+                    check_array[0, p1[1], p1[0]] = [i, j]
                     heapq.heappush(self.Seeds, (1-zncc, next(self.tiebreaker), [p1, p2]))
                     self.IntPnts[p1[1],p1[0]] = [p2[1],p2[0]]
                     self.img1_check[p1[1],p1[0]] = 1
                     self.img2_check[p2[1],p2[0]] = 1
-    
+        
+        for j, p2 in enumerate(self.points2):
+            pbar.update(1)
+            pbar.set_description(f'Working on image {self.i} and {self.j}, Seed Selection Progress')
+            x_, y_ = p2
+            x_ = self.Imgs[1][int(max(0, y_-w)) : int(min(self.H-1, y_+w+1)), int(max(0, x_-w)) : int(min(self.W-1, x_+w+1))]
+            zncc_best = 1
+            for i, p1 in enumerate(self.points1):
+                x, y = p1
+                x = self.Imgs[0][int(max(0, y-w)) : int(min(self.H-1, y+w+1)), int(max(0, x-w)) : int(min(self.W-1, x+w+1))]
+                zncc = self.ZNCC(x, x_)
+                
+                if zncc > thld_zncc_seed and zncc < zncc_best:
+                    zncc_best = zncc
+                    check_array[1, p2[1], p2[0]] = [i, j]
+                    heapq.heappush(self.Seeds, (1-zncc, next(self.tiebreaker), [p1, p2]))
+                    self.IntPnts[p1[1],p1[0]] = [p2[1],p2[0]]
+                    self.img1_check[p1[1],p1[0]] = 1
+                    self.img2_check[p2[1],p2[0]] = 1
+        pbar.close()
+        
+        yies, xes = np.where(check_array[0,:,:,0] != -1)
+        for y, x in zip(yies, xes):
+            i, j = check_array[0, y, x]
+            x_, y_ = self.points2[int(j)]
+            if list(check_array[1, y_, x_]) == [int(i), int(j)] and not self.img1_check[y, x] and not self.img2_check[y_, x_]:
+                self.IntPnts[y, x] = [y_, x_]
+                self.img1_check[y, x] = 1
+                self.img2_check[y_, x_] = 1
+                check_array[0, y, x] = check_array[1, y_, x_] = -1
+        '''
+        yies, xes = np.where(check_array[1,:,:,0] != -1)
+        for y_, x_ in zip(yies, xes):
+            i, j = check_array[1, y_, x_]
+            y, x = self.points1[i]
+            if list(check_array[0, y, x]) == [i, j] and not self.img1_check[y, x] and not self.img2_check[y_, x_]:
+                self.IntPnts[y, x] = [y_, x_]
+                self.img1_check[y, x] = 1
+                self.img2_check[y_, x_] = 1
+        '''
+        
     def Neighbor(self, X, N):
         x, y = X
         neigh = np.array(np.meshgrid(range(max(0, x-N), min(self.W-1, x+N+1)), range(max(0, y-N), min(self.H-1, y+N+1)))).T.reshape((-1, 2))
@@ -100,7 +146,7 @@ class DenseMatching:
     
     def Propagation(self, thld_zncc_propagation=0.5, thld_confidence=0.01, w=2, N_window=2, epsilon=1):
         
-        pbar = tqdm(range(self.H*self.W), leave=False, file=sys.stdout)
+        pbar = tqdm(range(self.H*self.W), file=sys.stdout)
         for i in pbar:
             pbar.set_description(f'Working on image {self.i} and {self.j}, Propagating on Seeds. Current Length of Seeds = {len(self.Seeds)}')
             
@@ -132,6 +178,7 @@ class DenseMatching:
             
             if len(self.Seeds) == 0:
                 break
+        pbar.close()
         
         self.convert_IntPnts_form()
     
